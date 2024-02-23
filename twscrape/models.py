@@ -170,6 +170,7 @@ class Tweet(JSONTrait):
     quoteCount: int
     conversationId: int
     conversationIdStr: str
+    possiblySensitive: bool
     hashtags: list[str]
     cashtags: list[str]
     mentionedUsers: list[UserRef]
@@ -211,6 +212,8 @@ class Tweet(JSONTrait):
 
         rt_obj = get_or(res, f"tweets.{_first(obj, rt_id_path)}")
         qt_obj = get_or(res, f"tweets.{_first(obj, qt_id_path)}")
+        
+        possibly_sensitive = obj["core"]["user_results"]["result"]["legacy"]["possibly_sensitive"]
 
         doc = Tweet(
             id=int(obj["id_str"]),
@@ -228,6 +231,7 @@ class Tweet(JSONTrait):
             conversationIdStr=obj["conversation_id_str"],
             hashtags=[x["text"] for x in get_or(obj, "entities.hashtags", [])],
             cashtags=[x["text"] for x in get_or(obj, "entities.symbols", [])],
+            possiblySensitive=possibly_sensitive,
             mentionedUsers=[UserRef.parse(x) for x in get_or(obj, "entities.user_mentions", [])],
             links=_parse_links(
                 obj, ["entities.urls", "note_tweet.note_tweet_results.result.entity_set.urls"]
